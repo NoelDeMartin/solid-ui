@@ -1,0 +1,54 @@
+diff --git a/node_modules/tailwindcss/preflight.css b/node_modules/tailwindcss/preflight.css
+index 753e79e..c9f71e7 100644
+--- a/node_modules/tailwindcss/preflight.css
++++ b/node_modules/tailwindcss/preflight.css
+@@ -10,11 +10,47 @@
+ ::backdrop,
+ ::file-selector-button {
+   box-sizing: border-box; /* 1 */
+-  margin: 0; /* 2 */
+-  padding: 0; /* 2 */
+   border: 0 solid; /* 3 */
+ }
+ 
++/* 2. Remove default margins and padding on standard HTML elements */
++html,
++body,
++p,
++ol,
++ul,
++li,
++dl,
++dt,
++dd,
++blockquote,
++figure,
++fieldset,
++legend,
++textarea,
++pre,
++iframe,
++hr,
++h1,
++h2,
++h3,
++h4,
++h5,
++h6,
++button,
++input,
++select,
++textarea,
++dialog,
++menu,
++canvas,
++video,
++audio,
++img {
++  margin: 0;
++  padding: 0;
++}
++
+ /*
+   1. Use a consistent sensible line-height in all browsers.
+   2. Prevent adjustments of font size after orientation changes in iOS.

@@ -14,8 +14,12 @@
   --solid-ui-color-slate-200: #e2e8f0;
   --solid-ui-color-slate-400: #90a1b9;
 
+  --solid-ui-color-body-grey: #666;
+
   --solid-ui-font-size-sm: 0.875rem; /* 14px */
   --solid-ui-font-size-md: 1rem; /* 16px */
   --solid-ui-font-size-lg: 1.125rem; /* 18px */
   --solid-ui-font-size-xl: 1.25rem; /* 20px */
+
+  --solid-ui-clickable-area: 42px;
 }
