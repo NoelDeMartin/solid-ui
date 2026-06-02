@@ -322,9 +322,9 @@ import { SignupButton } from 'solid-ui/components/signup-button'
 
 Web components use a two-stage build to produce a clean public runtime layout while keeping internal TypeScript artifacts separate:
 
-1. **`scripts/component-manifest.mjs`** is the source of truth for v2 web components. It defines the component entrypoints used by webpack and the public subpath names exposed from the package.
-2. **webpack** (`npm run build-dist`) bundles each component entrypoint from the manifest and emits the runtime files to `dist/components/<name>/index.js` and `dist/components/<name>/index.esm.js`.
-3. **tsc** (`npm run build-js`) emits internal declaration and JS artifacts mirroring the source tree under `dist/v2/components/<name>/`.
+1. **`scripts/component-manifest.mjs`** is the source of truth for consumer-facing web components (v2, design-system, primitives). It defines webpack entrypoints, output paths, and public `package.json` subpaths.
+2. **tsc** (`npm run build-js`) emits declaration files and internal JS artifacts mirroring the source tree (for example `dist/v2/components/...` and `dist/design-system/components/...`).
+3. **webpack** (`npm run build-dist`) bundles each manifest entrypoint into a self-contained `index.esm.js` / `index.js` next to the public types (for example `dist/components/header/` or `dist/design-system/components/provider/`). Components that share a tag name with another bundle (such as `solid-ui-button`) register via guarded `customElements.define` in their `index.ts`, like v2 components.
 4. **`scripts/build-component-dts.mjs`** (runs automatically after tsc as part of `postbuild-js`) writes thin public declaration wrappers at `dist/components/<name>/index.d.ts`, re-exporting from the internal `dist/v2/components/<name>/` output.
 5. **`scripts/sync-component-exports.mjs`** keeps the `package.json` `exports` map aligned with the manifest. It runs automatically as part of `npm run build` and `npm version` workflows.
 
@@ -342,6 +342,8 @@ This keeps the `package.json` subpath export fully aligned while exposing only t
 
 Consumers never import from `dist/v2/components/...`; that path is an internal build artifact only.
 
+Design-system components with an `index.ts` entrypoint under `src/design-system/components/<name>/` are discovered automatically and published as `./design-system/<name>` (for example `import 'solid-ui/design-system/provider'`).
+
 ### Adding a new web component
 
 When adding a new v2 component:
@@ -349,6 +351,8 @@ When adding a new v2 component:
 1. Create the component folder under `src/v2/components/` with its `index.ts` entrypoint. Components can be grouped in nested directories such as `src/v2/components/forms/select/`, `src/v2/components/auth/loginButton/`, or `src/v2/components/layout/header/`.
 2. Add one record to `scripts/component-manifest.mjs`. If the component lives in a nested directory, set its `sourcePath` in the manifest to match that grouped path.
 3. Run `npm run sync-component-exports` if you want to update `package.json` immediately, or just run `npm run build` and let the build do it automatically.
+
+For a new design-system component, add `src/design-system/components/<name>/index.ts` and run `npm run build`; exports are generated automatically.
 
 You should not need to hand-edit the webpack component entry list or the `package.json` component export map anymore.
 

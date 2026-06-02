@@ -1,13 +1,31 @@
 import path from 'path'
 import TerserPlugin from 'terser-webpack-plugin'
 import Icons from 'unplugin-icons/webpack'
-import { componentEntries } from './scripts/component-manifest.mjs'
+import { componentEntries, componentOutputPaths } from './scripts/component-manifest.mjs'
 
 import iconsConfig from './config/icons.mjs'
 import postCSSConfig from './config/postcss.mjs'
 import { resolvePathsUsingDecorators, litDecoratorsLoaderOptions } from './config/babel.mjs'
 
 const pathsUsingDecorators = resolvePathsUsingDecorators(process.cwd())
+
+function componentBundleFilename (pathData, basename) {
+  const chunkName = pathData.chunk.name
+  if (chunkName === 'main') {
+    return undefined
+  }
+
+  const outputPath = componentOutputPaths[chunkName]
+  if (!outputPath) {
+    throw new Error(`Missing webpack output path for component entry "${chunkName}"`)
+  }
+
+  return `${outputPath}/${basename}`
+}
+
+function entryFilename (pathData, basename, mainFallback) {
+  return componentBundleFilename(pathData, basename) ?? mainFallback
+}
 
 const externalsBase = {
   fs: 'null',
@@ -104,9 +122,7 @@ const minified = {
   mode: 'production',
   output: {
     ...common.output,
-    filename: pathData => pathData.chunk.name === 'main'
-      ? 'solid-ui.min.js'
-      : 'components/[name]/index.min.js'
+    filename: pathData => entryFilename(pathData, 'index.min.js', 'solid-ui.min.js')
   },
   externals: externalsBase,
   optimization: {
@@ -121,9 +137,7 @@ const unminified = {
   mode: 'production',
   output: {
     ...common.output,
-    filename: pathData => pathData.chunk.name === 'main'
-      ? 'solid-ui.js'
-      : 'components/[name]/index.js'
+    filename: pathData => entryFilename(pathData, 'index.js', 'solid-ui.js')
   },
   externals: externalsBase,
   optimization: {
@@ -140,9 +154,7 @@ const esmMinified = {
   },
   output: {
     path: path.resolve(process.cwd(), 'dist'),
-    filename: pathData => pathData.chunk.name === 'main'
-      ? 'solid-ui.esm.min.js'
-      : 'components/[name]/index.esm.min.js',
+    filename: pathData => entryFilename(pathData, 'index.esm.min.js', 'solid-ui.esm.min.js'),
     library: {
       type: 'module'
     },
@@ -170,9 +182,7 @@ const esmUnminified = {
   },
   output: {
     path: path.resolve(process.cwd(), 'dist'),
-    filename: pathData => pathData.chunk.name === 'main'
-      ? 'solid-ui.esm.js'
-      : 'components/[name]/index.esm.js',
+    filename: pathData => entryFilename(pathData, 'index.esm.js', 'solid-ui.esm.js'),
     library: {
       type: 'module'
     },

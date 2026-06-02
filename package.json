@@ -12,6 +12,8 @@
 		},
 		"./design-system.css": "./src/design-system/styles/variables.css",
 		"./primitives.css": "./src/primitives/styles/variables.css",
+		"./styles/design-system-variables.css": "./src/design-system/styles/variables.css",
+		"./styles/primitives-variables.css": "./src/primitives/styles/variables.css",
 		"./components/header": {
 			"types": "./dist/components/header/index.d.ts",
 			"import": "./dist/components/header/index.esm.js",
@@ -96,6 +98,96 @@
 			"types": "./dist/components/combobox/index.d.ts",
 			"import": "./dist/components/combobox/index.esm.js",
 			"require": "./dist/components/combobox/index.js"
+		},
+		"./design-system/account": {
+			"types": "./dist/design-system/components/account/index.d.ts",
+			"import": "./dist/design-system/components/account/index.esm.js",
+			"require": "./dist/design-system/components/account/index.js"
+		},
+		"./design-system/button": {
+			"types": "./dist/design-system/components/button/index.d.ts",
+			"import": "./dist/design-system/components/button/index.esm.js",
+			"require": "./dist/design-system/components/button/index.js"
+		},
+		"./components/design-system/button": {
+			"types": "./dist/design-system/components/button/index.d.ts",
+			"import": "./dist/design-system/components/button/index.esm.js",
+			"require": "./dist/design-system/components/button/index.js"
+		},
+		"./design-system/combobox": {
+			"types": "./dist/design-system/components/combobox/index.d.ts",
+			"import": "./dist/design-system/components/combobox/index.esm.js",
+			"require": "./dist/design-system/components/combobox/index.js"
+		},
+		"./design-system/combobox-option": {
+			"types": "./dist/design-system/components/combobox-option/index.d.ts",
+			"import": "./dist/design-system/components/combobox-option/index.esm.js",
+			"require": "./dist/design-system/components/combobox-option/index.js"
+		},
+		"./design-system/dialog": {
+			"types": "./dist/design-system/components/dialog/index.d.ts",
+			"import": "./dist/design-system/components/dialog/index.esm.js",
+			"require": "./dist/design-system/components/dialog/index.js"
+		},
+		"./design-system/dialog-content": {
+			"types": "./dist/design-system/components/dialog-content/index.d.ts",
+			"import": "./dist/design-system/components/dialog-content/index.esm.js",
+			"require": "./dist/design-system/components/dialog-content/index.js"
+		},
+		"./design-system/dialog-footer": {
+			"types": "./dist/design-system/components/dialog-footer/index.d.ts",
+			"import": "./dist/design-system/components/dialog-footer/index.esm.js",
+			"require": "./dist/design-system/components/dialog-footer/index.js"
+		},
+		"./design-system/dialog-header": {
+			"types": "./dist/design-system/components/dialog-header/index.d.ts",
+			"import": "./dist/design-system/components/dialog-header/index.esm.js",
+			"require": "./dist/design-system/components/dialog-header/index.js"
+		},
+		"./design-system/dialog-provider": {
+			"types": "./dist/design-system/components/dialog-provider/index.d.ts",
+			"import": "./dist/design-system/components/dialog-provider/index.esm.js",
+			"require": "./dist/design-system/components/dialog-provider/index.js"
+		},
+		"./design-system/dialogs-root": {
+			"types": "./dist/design-system/components/dialogs-root/index.d.ts",
+			"import": "./dist/design-system/components/dialogs-root/index.esm.js",
+			"require": "./dist/design-system/components/dialogs-root/index.js"
+		},
+		"./design-system/login-modal": {
+			"types": "./dist/design-system/components/login-modal/index.d.ts",
+			"import": "./dist/design-system/components/login-modal/index.esm.js",
+			"require": "./dist/design-system/components/login-modal/index.js"
+		},
+		"./design-system/menu": {
+			"types": "./dist/design-system/components/menu/index.d.ts",
+			"import": "./dist/design-system/components/menu/index.esm.js",
+			"require": "./dist/design-system/components/menu/index.js"
+		},
+		"./design-system/menu-item": {
+			"types": "./dist/design-system/components/menu-item/index.d.ts",
+			"import": "./dist/design-system/components/menu-item/index.esm.js",
+			"require": "./dist/design-system/components/menu-item/index.js"
+		},
+		"./design-system/menu-items": {
+			"types": "./dist/design-system/components/menu-items/index.d.ts",
+			"import": "./dist/design-system/components/menu-items/index.esm.js",
+			"require": "./dist/design-system/components/menu-items/index.js"
+		},
+		"./design-system/provider": {
+			"types": "./dist/design-system/components/provider/index.d.ts",
+			"import": "./dist/design-system/components/provider/index.esm.js",
+			"require": "./dist/design-system/components/provider/index.js"
+		},
+		"./components/primitives/avatar": {
+			"types": "./dist/components/primitiveAvatar/index.d.ts",
+			"import": "./dist/components/primitiveAvatar/index.esm.js",
+			"require": "./dist/components/primitiveAvatar/index.js"
+		},
+		"./components/primitives/guard": {
+			"types": "./dist/components/primitiveGuard/index.d.ts",
+			"import": "./dist/components/primitiveGuard/index.esm.js",
+			"require": "./dist/components/primitiveGuard/index.js"
 		}
 	},
 	"files": [
@@ -107,7 +199,7 @@
 	],
 	"scripts": {
 		"clean": "rm -rf ./dist ./src/versionInfo.ts ./docs/api .tsbuildinfo",
-		"build": "npm run clean && npm run sync-component-exports && npm run typecheck && npm run build-version && npm run build-dist && npm run build-js && npm run postbuild-js && npm run build-storybook",
+		"build": "npm run clean && npm run sync-component-exports && npm run typecheck && npm run build-version && npm run build-js && npm run build-dist && npm run postbuild-js",
 		"build-version": "sh ./timestamp.sh > src/versionInfo.ts && eslint 'src/versionInfo.ts' --fix",
 		"prebuild-js": "rm -f .tsbuildinfo",
 		"build-js": "tsc",

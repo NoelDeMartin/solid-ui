@@ -1,13 +1,17 @@
-import { LitElement, html, css } from 'lit'
+import { LitElement, html, css, nothing } from 'lit'
 import { icons } from '../../../../iconBase'
 import { authSession } from 'solid-logic'
 import '../../auth/loginButton/index'
 import '../../auth/signupButton/index'
 import { ifDefined } from 'lit/directives/if-defined.js'
 
-import '../../../../design-system/components/account'
-import '../../../../design-system/components/provider'
 import Features from '../../../../features'
+import '../../../../design-system/components/account'
+import '../../../../design-system/components/menu'
+import '../../../../design-system/components/menu-items'
+import '../../../../design-system/components/menu-item'
+import '../../../../design-system/components/button'
+import '~icons/lucide/help-circle'
 
 const DEFAULT_HELP_MENU_ICON = ''
 const DEFAULT_SOLID_ICON_URL = 'https://solidproject.org/assets/img/solid-emblem.svg'
@@ -491,6 +495,18 @@ export class Header extends LitElement {
     object-fit: contain;
     margin-right: 0.5rem;
   }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
   `
 
   declare logo: string
@@ -795,11 +811,7 @@ export class Header extends LitElement {
 
   private renderUserArea () {
     if (Features.DESIGN_SYSTEM_HEADER_ACCOUNT) {
-      return html`
-        <solid-ui-provider>
-          <solid-ui-account></solid-ui-account>
-        </solid-ui-provider>
-      `
+      return html`<solid-ui-account></solid-ui-account>`
     }
 
     if (this.authState === 'logged-out') {
@@ -807,6 +819,106 @@ export class Header extends LitElement {
     }
 
     return this.renderLoggedInActions()
+  }
+
+  private renderHelpArea () {
+    if (Features.DESIGN_SYSTEM_HEADER_ACCOUNT) {
+      if (this.layout === 'mobile') {
+        return html`${nothing}`
+      }
+
+      return html`
+        <div class="header-menu-separator"></div>
+        <solid-ui-menu>
+            <solid-ui-button slot="trigger" variant="ghost" title="Open help">
+                <span class="sr-only">Help</span>
+                <icon-lucide-help-circle slot="icon"></icon-lucide-help-circle>
+            </solid-ui-button>
+
+            <solid-ui-menu-items>
+                <solid-ui-menu-item href="https://solidos.github.io/userguide/">
+                    User guide
+                </solid-ui-menu-item>
+                <solid-ui-menu-item href="https://github.com/solidos/solidos/issues">
+                    Report a problem
+                </solid-ui-menu-item>
+            </solid-ui-menu-items>
+        </solid-ui-menu>
+        `
+    }
+
+    return html`
+        ${this.shouldRenderHelpMenu()
+        ? html`
+          <div class="header-menu-separator" />`
+        : ''}
+
+        ${this.shouldRenderHelpMenu()
+        ? html`
+          <div class="help-menu-container" part="help-menu-container">
+            <button
+              id="helpMenuTrigger"
+              class="help-menu-trigger"
+              type="button"
+              aria-haspopup="menu"
+              aria-expanded="${this.helpMenuOpen ? 'true' : 'false'}"
+              ?disabled="${!this.hasHelpMenuItems()}"
+              @click="${(e: MouseEvent) => this.toggleHelpMenu(e)}"
+              part="help-menu-trigger"
+            >
+              ${this.helpIcon
+                ? html`<img id="helpIcon" class="help-icon" src="${this.helpIcon}" alt="Help" part="help-icon" />`
+                : html`<span class="help-text" part="help-text">Help</span>`}
+            </button>
+
+          <nav
+            id="helpMenu"
+            class="help-dropdown"
+            role="menu"
+            ?inert="${!this.helpMenuOpen || !this.hasHelpMenuItems()}"
+            ?hidden="${!this.helpMenuOpen || !this.hasHelpMenuItems()}"
+            part="help-dropdown"
+          >
+            <div class="help-dropdown-content" @click="${() => { this.helpMenuOpen = false }}">
+              <slot name="help-menu" @slotchange="${(e: Event) => this.handleHelpSlotChange(e)}"></slot>
+              ${this.helpMenuList && this.helpMenuList.length
+              ? html`
+                <ul class="help-menu-list">
+                  ${this.helpMenuList.map((item: HeaderMenuItem) => html`
+                    <li>
+                      ${item.url
+                      ? html`
+                        <a
+                          href="${item.url}"
+                          target="${item.target || '_blank'}"
+                          rel="${ifDefined((item.target || '_blank') === '_blank' ? 'noopener noreferrer' : undefined)}"
+                          @click="${(e: MouseEvent) => this.handleHelpMenuClick(item, e)}"
+                          part="help-menu-item"
+                          role="menuitem"
+                        >
+                          ${item.label}
+                        </a>
+                      `
+                      : html`
+                        <button
+                          type="button"
+                          @click="${(e: MouseEvent) => this.handleHelpMenuClick(item, e)}"
+                          part="help-menu-item"
+                          role="menuitem"
+                        >
+                          ${item.label}
+                        </button>
+                      `}
+                    </li>
+                  `)}
+                </ul>
+              `
+              : ''}
+            </div>
+          </nav>
+        </div>`
+        : ''}
+    `
   }
 
   protected firstUpdated () {
@@ -840,77 +952,7 @@ export class Header extends LitElement {
 
         <div class="menu" part="menu">
           ${this.renderUserArea()}
-
-          ${this.shouldRenderHelpMenu()
-          ? html`
-            <div class="header-menu-separator" />`
-          : ''}
-
-          ${this.shouldRenderHelpMenu()
-          ? html`
-            <div class="help-menu-container" part="help-menu-container">
-              <button
-                id="helpMenuTrigger"
-                class="help-menu-trigger"
-                type="button"
-                aria-haspopup="menu"
-                aria-expanded="${this.helpMenuOpen ? 'true' : 'false'}"
-                ?disabled="${!this.hasHelpMenuItems()}"
-                @click="${(e: MouseEvent) => this.toggleHelpMenu(e)}"
-                part="help-menu-trigger"
-              >
-                ${this.helpIcon
-                  ? html`<img id="helpIcon" class="help-icon" src="${this.helpIcon}" alt="Help" part="help-icon" />`
-                  : html`<span class="help-text" part="help-text">Help</span>`}
-              </button>
-
-            <nav
-              id="helpMenu"
-              class="help-dropdown"
-              role="menu"
-              ?inert="${!this.helpMenuOpen || !this.hasHelpMenuItems()}"
-              ?hidden="${!this.helpMenuOpen || !this.hasHelpMenuItems()}"
-              part="help-dropdown"
-            >
-              <div class="help-dropdown-content" @click="${() => { this.helpMenuOpen = false }}">
-                <slot name="help-menu" @slotchange="${(e: Event) => this.handleHelpSlotChange(e)}"></slot>
-                ${this.helpMenuList && this.helpMenuList.length
-                ? html`
-                  <ul class="help-menu-list">
-                    ${this.helpMenuList.map((item: HeaderMenuItem) => html`
-                      <li>
-                        ${item.url
-                        ? html`
-                          <a
-                            href="${item.url}"
-                            target="${item.target || '_blank'}"
-                            rel="${ifDefined((item.target || '_blank') === '_blank' ? 'noopener noreferrer' : undefined)}"
-                            @click="${(e: MouseEvent) => this.handleHelpMenuClick(item, e)}"
-                            part="help-menu-item"
-                            role="menuitem"
-                          >
-                            ${item.label}
-                          </a>
-                        `
-                        : html`
-                          <button
-                            type="button"
-                            @click="${(e: MouseEvent) => this.handleHelpMenuClick(item, e)}"
-                            part="help-menu-item"
-                            role="menuitem"
-                          >
-                            ${item.label}
-                          </button>
-                        `}
-                      </li>
-                    `)}
-                  </ul>
-                `
-                : ''}
-              </div>
-            </nav>
-          </div>`
-          : ''}
+          ${this.renderHelpArea()}
         </div>
       </div>
     `

@@ -1,45 +1,33 @@
-import { existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import path from 'path'
-import { v2Components } from './component-manifest.mjs'
+import { typeStubPackages } from './component-manifest.mjs'
 
 const distDir = path.resolve(process.cwd(), 'dist')
-const v2ComponentsDir = path.join(distDir, 'v2', 'components')
 const publicComponentsDir = path.join(distDir, 'components')
 
-if (!existsSync(v2ComponentsDir)) {
-  throw new Error(`Missing expected directory: ${v2ComponentsDir}`)
-}
+for (const { distSegment, components } of typeStubPackages) {
+  const sourceRoot = path.join(distDir, distSegment)
 
-const manifestComponents = v2Components.map(({ sourceDir, sourcePath = sourceDir }) => ({
-  publicDir: sourceDir,
-  sourcePath
-}))
-
-const fallbackComponentDirs = readdirSync(v2ComponentsDir).filter(name => {
-  const fullPath = path.join(v2ComponentsDir, name)
-  return statSync(fullPath).isDirectory()
-}).map(name => ({
-  publicDir: name,
-  sourcePath: name
-}))
-
-const componentDirs = manifestComponents.length > 0 ? manifestComponents : fallbackComponentDirs
-
-for (const { publicDir, sourcePath } of componentDirs) {
-  const sourceIndex = path.join(v2ComponentsDir, sourcePath, 'index.d.ts')
-  if (!existsSync(sourceIndex)) {
-    continue
+  if (!existsSync(sourceRoot)) {
+    throw new Error(`Missing expected directory: ${sourceRoot}`)
   }
 
-  const outputDir = path.join(publicComponentsDir, publicDir)
-  mkdirSync(outputDir, { recursive: true })
+  for (const { entryName, sourcePath } of components) {
+    const sourceIndex = path.join(sourceRoot, sourcePath, 'index.d.ts')
+    if (!existsSync(sourceIndex)) {
+      continue
+    }
 
-  const relativePath = path.relative(outputDir, sourceIndex)
-    .replace(/\\/g, '/')
-    .replace(/\.d\.ts$/, '')
+    const outputDir = path.join(publicComponentsDir, entryName)
+    mkdirSync(outputDir, { recursive: true })
 
-  writeFileSync(
-    path.join(outputDir, 'index.d.ts'),
-    `export * from '${relativePath}';\n`
-  )
+    const relativePath = path.relative(outputDir, sourceIndex)
+      .replace(/\\/g, '/')
+      .replace(/\.d\.ts$/, '')
+
+    writeFileSync(
+      path.join(outputDir, 'index.d.ts'),
+      `export * from '${relativePath}';\n`
+    )
+  }
 }

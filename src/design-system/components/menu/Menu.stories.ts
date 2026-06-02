@@ -1,5 +1,6 @@
 import { html } from 'lit'
 
+import '~icons/lucide/external-link'
 import './Menu'
 import './../menu-item'
 import './../menu-items'
@@ -12,7 +13,7 @@ const meta = {
 
 const render = defineStoryRender(() => html`
     <solid-ui-menu>
-        <solid-ui-button slot="trigger" style="display:inline-block">
+        <solid-ui-button slot="trigger">
             Open Menu
         </solid-ui-button>
 
@@ -20,6 +21,10 @@ const render = defineStoryRender(() => html`
             <solid-ui-menu-item @click=${() => alert('Clicked One!')}>One</solid-ui-menu-item>
             <solid-ui-menu-item @click=${() => alert('Clicked Two!')}>Two</solid-ui-menu-item>
             <solid-ui-menu-item @click=${() => alert('Clicked Three!')}>Three</solid-ui-menu-item>
+            <solid-ui-menu-item href="https://solidproject.org">
+                <icon-lucide-external-link slot="left-icon"></icon-lucide-external-link>
+                External
+            </solid-ui-menu-item>
         </solid-ui-menu-items>
     </solid-ui-menu>
 `)

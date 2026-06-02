@@ -1,16 +1,22 @@
 import { readFileSync, writeFileSync } from 'fs'
 import path from 'path'
-import { componentExports } from './component-manifest.mjs'
+import { componentExports, styleExports } from './component-manifest.mjs'
 
 const packageJsonPath = path.resolve(process.cwd(), 'package.json')
 const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
 
 const preservedExports = Object.fromEntries(
-  Object.entries(packageJson.exports || {}).filter(([subpath]) => !subpath.startsWith('./components/'))
+  Object.entries(packageJson.exports || {}).filter(
+    ([subpath]) =>
+      !subpath.startsWith('./components/') &&
+      !subpath.startsWith('./styles/') &&
+      !subpath.startsWith('./design-system/')
+  )
 )
 
 const nextExports = {
   ...preservedExports,
+  ...styleExports,
   ...componentExports
 }
 
