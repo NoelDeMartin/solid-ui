@@ -11,4 +11,5 @@ if (typeof window !== 'undefined') {
   window.SolidLogic = solidLogic
 }
 
+export const tags = ['autodocs']
 export const parameters = {}
