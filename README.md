@@ -13,12 +13,10 @@ See [Forms introduction](./docs/FormsReadme.md) for UI vocabulary implementation
 
 ## Table of Contents
 - [Getting Started](#getting-started)
+- [How to import](#how-to-import)
 - [Install via npm](#install-via-npm)
-- [Use Directly in Browser](#use-directly-in-a-browser)
-  - [UMD Bundle](#umd-bundle-global-variable)
-  - [ESM Bundle](#esm-bundle-import-as-module)
+- [Use in the browser (CDN)](#use-in-the-browser-cdn)
 - [Web Components](#web-components)
-  - [solid-ui-header](#solid-ui-header)
 - [Development](#development)
 - [Testing](#adding-tests)
 - [Further Documentation](#further-documentation)
@@ -30,20 +28,67 @@ See [Forms introduction](./docs/FormsReadme.md) for UI vocabulary implementation
 Contributions of bug fixes and new functionality, documentation, and tests are
 always appreciated.
 
+## How to import
+
+One `dist/` tree serves three consumers. **Pick by how you load the code**, not by guessing from filenames alone.
+
+### By consumer
+
+| How you load | Import / URL | Built from | `dist` output |
+|--------------|--------------|------------|---------------|
+| **npm** — app or bundler | `import * as UI from 'solid-ui'` | [src/core.ts](./src/core.ts) | `core.esm.js`, `core.cjs.js`, `core.d.ts` |
+| **npm** — styles | `import 'solid-ui/styles.css'` | [src/styles.css](./src/styles.css) (published source) | — |
+| **npm** — one custom element | `import 'solid-ui/components/<name>'` | `src/components/<name>/index.ts` | `components/<name>/index.esm.js`, `.cjs.js`, `.d.ts` |
+| **Browser CDN** — full load | `<script type="module" src="…/index.js">` | [src/index.ts](./src/index.ts) | `index.js` |
+| **Browser CDN** — `window.UI` only | `…/core.js` | [src/core.ts](./src/core.ts) | `core.js` |
+| **Browser CDN** — one element | `…/components/<name>/index.js` | same component entry | `components/<name>/index.js` |
+| **Legacy** — old pages | `solid-ui.min.js`, `solid-ui.js`, `solid-ui.esm.js` | copies / UMD of loader | see [LEGACY.md](./LEGACY.md) |
+
+Load **rdflib** and **solid-logic** before any browser script (CDN or legacy UMD).
+
+### By file extension (in `dist/`)
+
+| Extension | Meaning |
+|-----------|---------|
+| `*.esm.js` / `*.cjs.js` | **npm** — Node and bundlers (`import` / `require`) |
+| Plain `index.js`, `core.js`, `components/*/index.js` | **Browser CDN** — `<script type="module">` |
+| `*.min.js` (top-level `solid-ui.*`) | **Legacy** UMD — `<script>` without `type="module"` |
+
+**Naming note:** `dist/index.js` (CDN loader) is **not** the npm package main. Bundlers resolve `solid-ui` to **`core.esm.js`** / **`core.cjs.js`**.
+
+### `package.json` exports (supported public API)
+
+```json
+".":              → dist/core.{esm,cjs}.js + core.d.ts
+"./styles.css":    → src/styles.css
+"./components/*":  → dist/components/*/index.{esm,cjs}.js + .d.ts
+```
+
+Deep paths under `dist/` (e.g. `dist/widgets/…`, `dist/lib/…`) come from `preserveModules` for the main build. They are **not** exported and may change; use `solid-ui` or `solid-ui/components/<name>` only.
+
+### Source layout
+
+| File | Role |
+|------|------|
+| [src/core.ts](./src/core.ts) | Library: `window.UI` + npm main |
+| [src/index.ts](./src/index.ts) | Browser loader: core + component registration |
+| [src/styles.css](./src/styles.css) | Design-system + primitives CSS variables |
+| [src/components/](./src/components/) | Public custom elements (`<name>/index.ts` + [index.ts](./src/components/index.ts) glob registry) |
+| [src/lib/](./src/lib/) | Former root modules (`ns`, `style`, `pad`, …) |
+
 ## Install via npm
 
 ```sh
 npm install solid-ui rdflib solid-logic
 ```
 
-Then import in your JavaScript/TypeScript code:
-
 ```js
-import * as UI from 'solid-ui'
+import * as UI from 'solid-ui'           // → dist/core.esm.js
+import 'solid-ui/styles.css'             // CSS variables for web components
+import 'solid-ui/components/button'      // registers <solid-ui-button>
 import * as $rdf from 'rdflib'
 import * as SolidLogic from 'solid-logic'
 
-// Example: Create a button
 const button = UI.widgets.button(
   document,
   'https://solidproject.org/assets/img/solid-emblem.svg',
@@ -53,311 +98,89 @@ const button = UI.widgets.button(
 document.body.appendChild(button)
 ```
 
-## Use Directly in a Browser
+## Use in the browser (CDN)
 
-Solid-UI provides both **UMD** and **ESM** bundles for direct browser usage. Both bundles externalize `rdflib` and `solid-logic`, which must be loaded separately.
+Always load dependencies first, then one or more solid-ui module scripts.
 
-### Available Files
+### Full loader (`index.js`)
 
-- **UMD (Universal Module Definition)**:
-  - Development: `dist/solid-ui.js` (exposes global `window.UI`)
-  - Production: `dist/solid-ui.min.js` (minified)
-  
-- **ESM (ES Modules)**:
-  - Development: `dist/solid-ui.esm.js`
-  - Production: `dist/solid-ui.esm.min.js` (minified)
-
-### UMD Bundle (Global Variable)
-
-If you use the legacy UMD bundle (`solid-ui.js` / `solid-ui.min.js`), `rdflib` must define `window.$rdf` before `solid-ui` loads. If `rdflib` is missing, `solid-ui` will throw `ReferenceError: $rdf is not defined`.
-
-Load via `<script>` tags and access through global variables `window.$rdf`, `window.SolidLogic`, and `window.UI`.
+Sets `window.UI` and registers every public component under `src/components/`.
 
 ```html
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Solid-UI UMD Example</title>
-</head>
-<body>
-  <div id="app"></div>
+<script src="https://cdn.jsdelivr.net/npm/rdflib/dist/rdflib.min.js"></script>
+<script src="https://unpkg.com/solid-logic/dist/solid-logic.min.js"></script>
+<script type="module" src="https://unpkg.com/solid-ui/dist/index.js"></script>
 
-  <!-- Load dependencies first -->
-  <script src="https://cdn.jsdelivr.net/npm/rdflib/dist/rdflib.min.js"></script>
-  <script src="https://unpkg.com/solid-logic/dist/solid-logic.min.js"></script>
-  
-  <!-- Load solid-ui UMD bundle -->
-  <script src="https://unpkg.com/solid-ui/dist/solid-ui.min.js"></script>
-
-  <script>
-    // Access via global variables
-    const { store, authn } = window.SolidLogic
-    const { widgets } = window.UI
-
-    // Get the logged-in user
-    const webId = authn.currentUser()
-    
-    if (webId) {
-      // User is logged in - create button with their WebID
-      const userButton = widgets.button(
-        document,
-        'https://solidproject.org/assets/img/solid-emblem.svg',
-        `Logged in as: ${webId.value}`,
-        () => alert(`Your WebID: ${webId.value}`)
-      )
-      document.getElementById('app').appendChild(userButton)
-    } else {
-      // User not logged in - create login button
-      const loginButton = widgets.button(
-        document,
-        'https://solidproject.org/assets/img/solid-emblem.svg',
-        'Login to Solid',
-        () => authn.checkUser().then(() => location.reload())
-      )
-      document.getElementById('app').appendChild(loginButton)
-    }
-  </script>
-</body>
-</html>
+<solid-ui-button label="Click me"></solid-ui-button>
 ```
 
-### ESM Bundle (Import as Module)
+### `core.js` + one component
 
-Use modern JavaScript modules with `import` statements.
+Use when you only need `window.UI` and a subset of custom elements.
 
 ```html
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Solid-UI ESM Example</title>
-</head>
-<body>
-  <div id="app"></div>
+<script src="https://cdn.jsdelivr.net/npm/rdflib/dist/rdflib.min.js"></script>
+<script src="https://unpkg.com/solid-logic/dist/solid-logic.min.js"></script>
+<script type="module" src="https://unpkg.com/solid-ui/dist/core.js"></script>
+<script type="module" src="https://unpkg.com/solid-ui/dist/components/button/index.js"></script>
 
-  <script type="module">
-    // Import from CDN (esm.sh, unpkg, or jsdelivr)
-    import * as $rdf from 'https://esm.sh/rdflib'
-    import * as SolidLogic from 'https://esm.sh/solid-logic@4.0.1'
-    import * as UI from 'https://esm.sh/solid-ui@3.0.1'
-
-    // Get the logged-in user
-    const webId = SolidLogic.authn.currentUser()
-    
-    if (webId) {
-      // User is logged in - create personalized button
-      const userName = await getUserName(webId)
-      const userButton = UI.widgets.button(
-        document,
-        'https://solidproject.org/assets/img/solid-emblem.svg',
-        userName || 'My Profile',
-        () => window.open(webId.value, '_blank')
-      )
-      document.getElementById('app').appendChild(userButton)
-    } else {
-      // User not logged in
-      const loginButton = UI.widgets.button(
-        document,
-        'https://solidproject.org/assets/img/solid-emblem.svg',
-        'Login to Solid',
-        async () => {
-          await SolidLogic.authn.checkUser()
-          location.reload()
-        }
-      )
-      document.getElementById('app').appendChild(loginButton)
-    }
-
-    // Helper function to fetch user's name from their profile
-    async function getUserName(webId) {
-      try {
-        await SolidLogic.store.fetcher.load(webId.doc())
-        const name = SolidLogic.store.any(webId, $rdf.sym('http://xmlns.com/foaf/0.1/name'))
-        return name ? name.value : null
-      } catch (error) {
-        console.error('Error fetching user name:', error)
-        return null
-      }
-    }
-  </script>
-</body>
-</html>
+<solid-ui-button label="Click me"></solid-ui-button>
 ```
 
-### ESM Bundle with Import Maps
+Shared chunks under `dist/components/chunks/` are part of the module graph — do not use them as standalone script URLs.
 
-Use import maps for cleaner module specifiers:
+### Legacy filenames
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Solid-UI ESM with Import Maps</title>
-</head>
-<body>
-  <div id="app"></div>
-
-  <!-- Define import map for bare specifiers -->
-  <script type="importmap">
-  {
-    "imports": {
-      "rdflib": "https://esm.sh/rdflib",
-      "solid-logic": "https://esm.sh/solid-logic@4.0.1",
-      "solid-ui": "https://esm.sh/solid-ui@3.0.1"
-    }
-  }
-  </script>
-
-  <script type="module">
-    // Use clean bare specifiers
-    import * as $rdf from 'rdflib'
-    import * as SolidLogic from 'solid-logic'
-    import * as UI from 'solid-ui'
-
-    const app = document.getElementById('app')
-    
-    // Create a profile button for logged-in user
-    async function createUserButton() {
-      const webId = SolidLogic.authn.currentUser()
-      
-      if (!webId) {
-        const loginBtn = UI.widgets.button(
-          document,
-          'https://solidproject.org/assets/img/solid-emblem.svg',
-          'Login',
-          () => SolidLogic.authn.checkUser()
-        )
-        app.appendChild(loginBtn)
-        return
-      }
-
-      // Fetch user profile
-      try {
-        await SolidLogic.store.fetcher.load(webId.doc())
-        const name = SolidLogic.store.any(
-          webId,
-          $rdf.sym('http://xmlns.com/foaf/0.1/name')
-        )
-        
-        const profileBtn = UI.widgets.button(
-          document,
-          'https://solidproject.org/assets/img/solid-emblem.svg',
-          name ? name.value : 'My Profile',
-          () => {
-            alert(`WebID: ${webId.value}\nName: ${name ? name.value : 'Not set'}`)
-          }
-        )
-        app.appendChild(profileBtn)
-      } catch (error) {
-        console.error('Error loading profile:', error)
-      }
-    }
-
-    createUserButton()
-  </script>
-</body>
-</html>
-```
+Older integrations may still reference `solid-ui.min.js`, `solid-ui.js`, or `solid-ui.esm.js`. See **[LEGACY.md](./LEGACY.md)** for what each file is and how to migrate.
 
 ## Web Components
 
-solid-ui ships self-contained Lit-based custom elements as subpath exports. Each component is independently importable, registers its custom element on import, and ships its own styles encapsulated in a Shadow DOM.
+Public custom elements are published only from **`src/components/<name>/`**. Each folder is one npm subpath and one CDN script. Importing the module registers the element (Lit + Shadow DOM styles).
 
-> Component UMD bundles do not export a shared global like `window.UI`. They only register the custom element on import, while the legacy main bundle still provides the `UI` global.
+Today’s published example:
 
-### solid-ui-header
-
-A header bar with branding, auth state (logged-out / logged-in), an account dropdown, an optional logout icon, and a desktop-only help menu.
-
-**Subpath export:** `solid-ui/components/header`
+**Subpath:** `solid-ui/components/button`
 
 ```typescript
-import { Header } from 'solid-ui/components/header'
-import type { HeaderMenuItem, HeaderAccountMenuItem, HeaderAuthState } from 'solid-ui/components/header'
+import 'solid-ui/components/button'
+// or: import { Button } from 'solid-ui/components/button'
 ```
 
 ```html
-<solid-ui-header theme="dark" layout="desktop" brand-link="/">
-  <a slot="help-menu" href="/help">Help</a>
-</solid-ui-header>
+<solid-ui-button label="Click me"></solid-ui-button>
 ```
 
-Importing this module automatically registers `<solid-ui-header>` as a custom element.
+**CDN:** `dist/components/button/index.js` (with `core.js` or `index.js` as above).
 
-### solid-ui-login-button
+More elements are added by creating `src/components/<name>/index.ts` and running `npm run build:all` ([config/components.ts](./config/components.ts) discovers folders automatically). Implementations may live under `src/design-system/` or `src/primitives/`; only `src/components/` is part of the stable export surface.
 
-A standalone login button that encapsulates the Solid OIDC login flow and emits `login-success` when authentication succeeds.
+### Build outputs
 
-**Subpath export:** `solid-ui/components/login-button`
+| Command | Produces |
+|---------|----------|
+| `npm run build` | `core.{esm,cjs}.js`, `preserveModules` tree, `components/<name>/index.{esm,cjs}.js` |
+| `npm run build:cdn` | `index.js`, `core.js`, `components/<name>/index.js`, legacy aliases |
+| `npm run build:all` | Both (publish tarball) |
 
-```typescript
-import { LoginButton } from 'solid-ui/components/login-button'
-```
+### Adding a public component
 
-```html
-<solid-ui-login-button label="Log in" issuer-url="https://solidcommunity.net" icon="https://example.com/login-icon.svg"></solid-ui-login-button>
-```
-
-```typescript
-const loginButton = document.querySelector('solid-ui-login-button') as LoginButton
-loginButton.addEventListener('login-success', (event: CustomEvent) => {
-  console.log('Logged in as', event.detail.webId)
-})
-```
-
-### solid-ui-signup-button
-
-A standalone sign-up button that opens a signup URL in a new browser tab.
-
-**Subpath export:** `solid-ui/components/signup-button`
-
-```typescript
-import { SignupButton } from 'solid-ui/components/signup-button'
-```
-
-```html
-<solid-ui-signup-button label="Get a Pod" signup-url="https://solidproject.org/get_a_pod" icon="https://example.com/icon.svg"></solid-ui-signup-button>
-```
-
-### Component build pipeline
-
-Web components use a two-stage build to produce a clean public runtime layout while keeping internal TypeScript artifacts separate:
-
-1. **`scripts/component-manifest.mjs`** is the source of truth for v2 web components. It defines the component entrypoints used by webpack and the public subpath names exposed from the package.
-2. **webpack** (`npm run build-dist`) bundles each component entrypoint from the manifest and emits the runtime files to `dist/components/<name>/index.js` and `dist/components/<name>/index.esm.js`.
-3. **tsc** (`npm run build-js`) emits internal declaration and JS artifacts mirroring the source tree under `dist/v2/components/<name>/`.
-4. **`scripts/build-component-dts.mjs`** (runs automatically after tsc as part of `postbuild-js`) writes thin public declaration wrappers at `dist/components/<name>/index.d.ts`, re-exporting from the internal `dist/v2/components/<name>/` output.
-5. **`scripts/sync-component-exports.mjs`** keeps the `package.json` `exports` map aligned with the manifest. It runs automatically as part of `npm run build` and `npm version` workflows.
-
-The legacy main bundle remains a special case. In [webpack.config.mjs](webpack.config.mjs) only the `main` entry keeps the UMD `UI` global export; component entries are generated from the manifest and built as standalone scripts so they do not clobber one another when loaded directly.
-
-This keeps the `package.json` subpath export fully aligned while exposing only the public `dist/components/...` layout:
-
-```json
-"./components/header": {
-  "types":   "./dist/components/header/index.d.ts",
-  "import":  "./dist/components/header/index.esm.js",
-  "require": "./dist/components/header/index.js"
-}
-```
-
-Consumers never import from `dist/v2/components/...`; that path is an internal build artifact only.
-
-### Adding a new web component
-
-When adding a new v2 component:
-
-1. Create the component folder under `src/v2/components/` with its `index.ts` entrypoint. Components can be grouped in nested directories such as `src/v2/components/forms/select/`, `src/v2/components/auth/loginButton/`, or `src/v2/components/layout/header/`.
-2. Add one record to `scripts/component-manifest.mjs`. If the component lives in a nested directory, set its `sourcePath` in the manifest to match that grouped path.
-3. Run `npm run sync-component-exports` if you want to update `package.json` immediately, or just run `npm run build` and let the build do it automatically.
-
-You should not need to hand-edit the webpack component entry list or the `package.json` component export map anymore.
+1. Add `src/components/<name>/index.ts` (re-export or define the custom element).
+2. Run `npm run build:all`.
 
 ## Development
 
-When developing a component in solid-ui you can test it in isolation using storybook
+| Command | Purpose |
+|---------|---------|
+| `npm run build` | npm ESM + CJS + types (Vite) |
+| `npm run build:cdn` | CDN loader, per-component ESM, legacy UMD |
+| `npm run build:all` | Full publish output (npm then CDN) |
+| `npm run build-dist` | Legacy webpack (dev; overlaps `dist/`) |
+| `npm run watch` | tsc + webpack watch (legacy dev loop) |
+
+When developing a component in solid-ui you can test it in isolation using Storybook:
 
 ```
-npm run build
+npm run build:all
 npm run storybook
 ```
 
