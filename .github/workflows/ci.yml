@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - staging
   pull_request:
     branches:
       - main
+      - staging
   workflow_dispatch:
 
 jobs:
@@ -23,6 +25,8 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm ci
       - run: npm test
+      - run: npm run typecheck
+      - run: npm run typecheck-test
       - run: npm run build
       - run: npm run doc
       - name: Save build
