@@ -4,6 +4,8 @@
  * and some components get bundled twice.
  *
  * This should be removed once that problem is fixed.
+ *
+ * TODO open issue in github and link here
  */
 
 function defineCustomElement (tagName: string, elementClass: CustomElementConstructor): void {
