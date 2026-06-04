@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Features from '../../../../lib/features'
 import { Header } from './Header'
 import './index'
@@ -9,7 +10,7 @@ describe('SolidUIHeaderElement', () => {
     Object.defineProperty(window, 'open', {
       configurable: true,
       writable: true,
-      value: jest.fn()
+      value: vi.fn()
     })
   })
 
@@ -51,7 +52,7 @@ describe('SolidUIHeaderElement', () => {
 
   it('renders login and sign up actions when logged out', async () => {
     const header = new Header()
-    const authActionSelected = jest.fn()
+    const authActionSelected = vi.fn()
 
     header.authState = 'logged-out'
     header.loginAction = { label: 'Log in', action: 'login', icon: 'https://example.com/login-icon.svg' }
@@ -124,7 +125,7 @@ describe('SolidUIHeaderElement', () => {
 
   it('renders an accounts dropdown with avatar when logged in', async () => {
     const header = new Header()
-    const accountMenuSelected = jest.fn()
+    const accountMenuSelected = vi.fn()
 
     header.authState = 'logged-in'
     header.accountIcon = 'https://example.com/account-icon.svg'
@@ -266,7 +267,7 @@ describe('SolidUIHeaderElement', () => {
   it('renders helpMenuList inside the help dropdown and dispatches events', async () => {
     const header = new Header()
 
-    const helpMenuClicked = jest.fn()
+    const helpMenuClicked = vi.fn()
 
     header.authState = 'logged-in'
     header.helpIcon = ''
@@ -295,7 +296,7 @@ describe('SolidUIHeaderElement', () => {
     expect(helpLink?.textContent?.trim()).toBe('Docs')
 
     const originalWindowOpen = window.open
-    window.open = jest.fn()
+    window.open = vi.fn()
 
     expect(helpLink?.getAttribute('rel')).toBe('noopener noreferrer')
 

@@ -1,5 +1,6 @@
+import { describe, expect, it } from 'vitest'
 import { silenceDebugMessages } from './helpers/debugger'
-import * as Index from '../../src/index'
+import * as Index from '../../src/core'
 
 silenceDebugMessages()
 

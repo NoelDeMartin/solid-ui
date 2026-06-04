@@ -1,6 +1,6 @@
 import dts from 'unplugin-dts/vite'
 import { isAbsolute } from 'node:path'
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 import type { UserConfig } from 'vite'
 import babel from './config/babel'
 import css from './config/css'
@@ -57,6 +57,13 @@ function defaultConfig(): UserConfig {
                         && !id.startsWith('.')
                         && !isAbsolute(id)
                 },
+            },
+        },
+        test: {
+            environment: 'jsdom',
+            setupFiles: ['test/helpers/setup.ts'],
+            coverage: {
+                include: ['src/**/*.[jt]s'],
             },
         },
     }
