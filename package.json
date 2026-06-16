@@ -6,7 +6,7 @@
 	"types": "dist/index.d.ts",
 	"exports": {
 		".": {
-			"style": "./dist/styles.css",
+			"style": "./dist/theme.css",
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.esm.js",
 			"require": "./dist/index.cjs.js"
@@ -34,8 +34,8 @@
 		"build-cdn-legacy": "vite build --mode cdn-legacy",
 		"build-npm": "vite build",
 		"build-styles": "vite build --mode styles",
-        "build-version": "sh ./timestamp.sh > src/versionInfo.ts && eslint 'src/versionInfo.ts' --fix",
-        "postbuild-js": "rm -f dist/versionInfo.d.ts dist/versionInfo.d.ts.map",
+		"build-version": "sh ./timestamp.sh > src/versionInfo.ts && eslint 'src/versionInfo.ts' --fix",
+		"postbuild-js": "rm -f dist/versionInfo.d.ts dist/versionInfo.d.ts.map",
 		"watch": "concurrently -k -n npm,styles \"npm:watch-npm\" \"npm:watch-styles\"",
 		"watch-npm": "vite build --watch",
 		"watch-styles": "vite build --mode styles --watch",
@@ -87,7 +87,7 @@
 		"mime-types": "^3.0.2",
 		"pane-registry": "^3.1.1",
 		"solid-namespace": "^0.5.4",
-		"tailwindcss": "^4.3.0",
+		"tailwindcss": "4.3.0",
 		"uuid": "^14.0.0"
 	},
 	"peerDependencies": {
