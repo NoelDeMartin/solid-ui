@@ -1,9 +1,13 @@
 import { TemplateResult } from 'lit'
 import { ShowDialogEvent } from './events/show-dialog'
-import Dialog from './Dialog'
+import Dialog, { DialogConfig } from './Dialog'
 
-export function showDialog<T extends HTMLElement = HTMLElement> (template: TemplateResult): Promise<T> {
-  const dialog = new Dialog(template)
+export interface Modal<T = unknown> {
+  close (data: T): void
+}
+
+export function showDialog<T extends HTMLElement = HTMLElement> (template: TemplateResult, config: DialogConfig = {}): Promise<T> {
+  const dialog = new Dialog(template, config)
 
   document.dispatchEvent(new ShowDialogEvent(dialog))
 

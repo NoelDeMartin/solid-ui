@@ -1,7 +1,8 @@
+import { customElement, WebComponent } from '@/lib/components'
 import { html } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
-import { generateId, WebComponent, customElement } from '@/lib/components'
-import ComboboxOption from '@/components/combobox-option/ComboboxOption'
+import InputTrait from '@/lib/components/traits/InputTrait'
+import type ComboboxOption from '@/components/combobox-option/ComboboxOption'
 
 import '~icons/lucide/chevron-down'
 
@@ -13,56 +14,91 @@ export default class Combobox extends WebComponent {
   static formAssociated = true
 
   @property({ type: String, reflect: true })
-  accessor label = ''
+  accessor label = '';
+
+  @property({ type: String, reflect: true })
+  accessor name = '';
 
   @property({ type: String })
-  accessor value = ''
+  accessor value = '';
 
-  @query('[popover]')
-  private accessor popoverElement: HTMLDivElement | null = null
+  @property({ type: String, reflect: true })
+  accessor placeholder = '';
+
+  @property({ type: Boolean, reflect: true })
+  accessor required = false;
 
   @query('input')
-  private accessor inputElement: HTMLInputElement | null = null
+  accessor inputElement: HTMLInputElement | null = null;
+
+  @query('[popover]')
+  private accessor popoverElement: HTMLDivElement | null = null;
 
   @state()
-  private accessor filter = ''
+  private accessor filter = '';
 
-  private inputId = `combobox-${generateId()}`
+  private inputTrait: InputTrait
+
+  constructor () {
+    super()
+
+    this.inputTrait = this.addTrait(
+      new InputTrait(this, {
+        idPrefix: 'combobox',
+        getInputElement: () => this.inputElement,
+        getInternals: () => this.getInternals(),
+        onValueChanged: (value) => {
+          this.filter = value.toLowerCase()
+        },
+      })
+    )
+  }
 
   protected render () {
-    const options = this.getOptions().filter(option => option.toLowerCase().includes(this.filter))
+    const options = this.getOptions().filter((option) =>
+      option.label.toLowerCase().includes(this.filter)
+    )
 
     return html`
-        ${this.label ? html`<label for="${this.inputId}">${this.label}</label>` : ''}
-        <div class="input-wrapper">
-            <input
-                id="${this.inputId}"
-                .value=${this.value}
-                type="text"
-                @keydown=${this.onInputKeyDown}
-                @click=${this.onInputClick}
-                @input=${this.onInputChange}
-            />
-            <icon-lucide-chevron-down></icon-lucide-chevron-down>
-        </div>
-        <div role="listbox" aria-labelledby="${this.inputId}" popover>
-          ${options.map(option => html`<div role="option" aria-selected="false" @click=${() => this.onOptionClick(option)}>${option}</div>`)}
-        </div>
+      ${this.inputTrait.renderLabel()}
+      <div class="input-wrapper">
+        <input
+          id="${this.inputTrait.inputId}"
+          type="text"
+          name=${this.name}
+          ?placeholder=${this.placeholder}
+          ?required=${this.required}
+          .value=${this.value}
+          @keydown=${this.onInputKeyDown}
+          @click=${this.onInputClick}
+          @input=${() => this.inputTrait.onInput()}
+        />
+        <icon-lucide-chevron-down></icon-lucide-chevron-down>
+      </div>
+      <div role="listbox" aria-labelledby="${this.inputTrait.inputId}" popover>
+        ${options.map(
+          (option) =>
+            html`<div
+              role="option"
+              aria-selected="false"
+              @click=${() => this.onOptionClick(option.value)}
+            >
+              ${option.label}
+            </div>`
+        )}
+      </div>
     `
   }
 
-  private getOptions (): string[] {
-    const options = this.querySelectorAll<ComboboxOption>('solid-ui-combobox-option')
+  private getOptions (): { value: string; label: string }[] {
+    const options = this.querySelectorAll<ComboboxOption>(
+      'solid-ui-combobox-option'
+    )
 
-    return Array.from(options).map(option => option.value)
-  }
-
-  private setValue (value: string) {
-    this.filter = value.toLowerCase()
-    this.value = value
-
-    this.getInternals().setFormValue(value)
-    this.dispatchEvent(new InputEvent('input', { bubbles: true, composed: true }))
+    return Array.from(options).map((option) => ({
+      value: option.value,
+      label: option.textContent,
+    }))
   }
 
   private onInputKeyDown (e: KeyboardEvent) {
@@ -75,7 +111,7 @@ export default class Combobox extends WebComponent {
         if (!this.popoverElement?.matches(':popover-open')) {
           e.preventDefault()
 
-          this.getInternals().form?.requestSubmit()
+          this.inputTrait.onSubmit()
         }
         break
     }
@@ -87,12 +123,8 @@ export default class Combobox extends WebComponent {
     this.popoverElement?.showPopover()
   }
 
-  private onInputChange () {
-    this.setValue(this.inputElement?.value ?? '')
-  }
-
   private onOptionClick (option: string) {
-    this.setValue(option)
+    this.inputTrait.setValue(option)
 
     this.popoverElement?.hidePopover()
   }
