@@ -1,6 +1,3 @@
-import '../../src/design-system/shims.d.ts'
-import '../../src/design-system/polyfills/css-anchor-positioning'
-
 import { expect, vi } from 'vitest'
 import { toContainGraph } from '../custom-matchers/toContainGraph'
 import { toEqualGraph } from '../custom-matchers/toEqualGraph'

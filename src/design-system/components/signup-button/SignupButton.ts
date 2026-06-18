@@ -3,10 +3,10 @@ import { consume } from '@lit/context'
 import { html } from 'lit'
 import { authContext, AuthContext, DEFAULT_AUTH_CONTEXT } from '@/lib/auth'
 
-import '@/components/button'
+import '@/design-system/components/button'
 
-@customElement('solid-ui-login-button')
-export default class LoginButton extends WebComponent {
+@customElement('solid-ui-signup-button')
+export default class SignupButton extends WebComponent {
   @consume({ context: authContext, subscribe: true })
   private accessor auth: AuthContext = DEFAULT_AUTH_CONTEXT
 
@@ -15,7 +15,7 @@ export default class LoginButton extends WebComponent {
       <slot name="trigger" @click=${this.onClick}>
         <solid-ui-button>
             <slot>
-                Log In
+                Sign Up
             </slot>
         </solid-ui-button>
       </slot>
@@ -25,6 +25,6 @@ export default class LoginButton extends WebComponent {
   private onClick (e: MouseEvent) {
     e.preventDefault()
 
-    this.auth.login()
+    this.auth.signup()
   }
 }

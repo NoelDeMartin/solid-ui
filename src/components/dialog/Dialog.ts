@@ -7,7 +7,7 @@ import DialogTrait from '@/lib/components/traits/DialogTrait'
 
 import '~icons/lucide/x'
 import '@/components/dialog-header'
-import '@/components/button'
+import '@/design-system/components/button'
 
 import styles from './Dialog.styles.css'
 

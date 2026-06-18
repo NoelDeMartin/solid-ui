@@ -3,7 +3,7 @@
  */
 
 const Features = {
-  DESIGN_SYSTEM_HEADER_ACCOUNT: true,
+  DESIGN_SYSTEM_HEADER_ACCOUNT: false,
 }
 
 export default Features

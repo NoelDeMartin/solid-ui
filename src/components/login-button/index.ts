@@ -1,4 +1,1 @@
-import LoginButton from './LoginButton'
-
-export { LoginButton }
-export default LoginButton
+export * from '../../v2/components/auth/loginButton'

@@ -1,7 +1,7 @@
 import { html } from 'lit'
 import { defineStoryRender } from '@/storybook'
 
-import '@/components/button'
+import '@/design-system/components/button'
 import '@/components/menu-item'
 import '@/components/menu-items'
 

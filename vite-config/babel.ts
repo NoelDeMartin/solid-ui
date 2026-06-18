@@ -31,6 +31,7 @@ export default function (options: {
             {
                 include: [
                     'src/components',
+                    'src/design-system',
                     'src/storybook',
                 ],
                 assumptions: { setPublicClassFields: false },

@@ -2,7 +2,7 @@ import { html } from 'lit'
 import { defineStoryRender, internals } from '@/storybook'
 import { showDialog } from '@/lib/dialogs'
 
-import '@/components/button'
+import '@/design-system/components/button'
 
 import LoginModal from './LoginModal'
 

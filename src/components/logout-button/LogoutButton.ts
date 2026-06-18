@@ -3,7 +3,7 @@ import { consume } from '@lit/context'
 import { html } from 'lit'
 import { authContext, AuthContext, DEFAULT_AUTH_CONTEXT } from '@/lib/auth'
 
-import '@/components/button'
+import '@/design-system/components/button'
 
 @customElement('solid-ui-logout-button')
 export default class LogoutButton extends WebComponent {
